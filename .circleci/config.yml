@@ -1,5 +1,3 @@
-# This config was automatically generated from your source code
-# Stacks detected: cicd:github-actions:.github/workflows,deps:node:.,deps:php:.
 version: 2.1
 orbs:
   node: circleci/node@5
@@ -28,13 +26,22 @@ jobs:
   test-php:
     # Install php packages and run tests
     docker:
-      - image: cimg/php:8.1-node
+      - image: cimg/php:8.1
     steps:
       - checkout
-      - php/install-packages
       - run:
-          name: run tests
-          command: ./vendor/bin/phpunit
+          name: "Create Environment file and generate app key"
+          command: |
+            mv .env.testing .env
+      - run:
+          name: "Install Dependencies"
+          command: composer install -n --prefer-dist
+      - run:
+          name: "Generate App key"
+          command: php artisan key:generate
+      - run:
+          name: "Run Tests"
+          command: php artisan test
   deploy:
     # This is an example deploy job, not actually used by the workflow
     docker:
